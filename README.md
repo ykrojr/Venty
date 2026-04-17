@@ -1,4 +1,4 @@
-# Venty - Marcador de Evento
+# Venty - Marcador de Evento (Em desenvolvimento)
 
 Sistema desenvolvido para organizar a logística de eventos, focado principalmente no controle de produtos e integração com dados de cardápios (via PDF). O backend é feito em Spring Boot (Java) com banco PostgreSQL, e o front usa React com Vite.
 
