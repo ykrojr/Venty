@@ -9,22 +9,17 @@ A ideia principal é gerenciar diferentes eventos em uma estrutura de SaaS (mult
 - Script de integração para extrair itens de cardápios em PDF diretamente para o sistema.
 - Controle básico de usuários e autenticação JWT.
 
-## Setup técnico
+## Como rodar
 
 ### Requisitos
 - Java 17
 - Node.js
 - Postgres
 
-### Como rodar
-1. **Banco de dados**: Crie um database chamado `marcador_eventos` no seu Postgres.
-2. **Backend**: 
-   - Configure o arquivo `.env` dentro da pasta `backend/` com seu usuário e senha do banco.
-   - Execute com o comando `mvn spring-boot:run` dentro da pasta.
-3. **Frontend**:
-   - Entre na pasta `frontend/`.
-   - `npm install` para as dependências.
-   - `npm run dev` para subir o servidor local.
+### Setup
+1. **Banco**: Crie um database chamado `marcador_eventos` no Postgres.
+2. **Backend**: Configure seu usuário e senha do banco no arquivo `.env` que está na pasta `backend/` e rode com `mvn spring-boot:run`. (Não subi o `.env` pro Github por segurança, então cada um usa o seu local).
+3. **Frontend**: Na pasta `frontend/`, rode `npm install` e depois `npm run dev`.
 
-## Segurança
-As credenciais de acesso ao banco e o segredo do JWT não estão no código. Eles devem ser configurados localmente no arquivo `.env` no backend para evitar vazamentos em repositórios públicos.
+---
+*Projeto pessoal focado em organização de eventos.*
