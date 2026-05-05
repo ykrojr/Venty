@@ -4,6 +4,7 @@ import com.saas.eventos.api.dto.ProdutoDTO;
 import com.saas.eventos.service.ProdutoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +27,20 @@ public class ProdutoController {
 
     @Operation(summary = "Adiciona um produto/cardápio a um evento específico")
     @PostMapping
-    public ResponseEntity<ProdutoDTO> criar(@PathVariable Long eventoId, @RequestBody ProdutoDTO dto) {
+    public ResponseEntity<ProdutoDTO> criar(@PathVariable Long eventoId, @Valid @RequestBody ProdutoDTO dto) {
         return ResponseEntity.ok(produtoService.salvarProdutoNoEvento(eventoId, dto));
+    }
+
+    @Operation(summary = "Atualiza os dados de um produto existente e seus subprodutos")
+    @PutMapping("/{produtoId}")
+    public ResponseEntity<ProdutoDTO> editar(@PathVariable Long eventoId, @PathVariable Long produtoId, @Valid @RequestBody ProdutoDTO dto) {
+        return ResponseEntity.ok(produtoService.editarProduto(eventoId, produtoId, dto));
     }
 
     @Operation(summary = "Remove um produto de um evento")
     @DeleteMapping("/{produtoId}")
     public ResponseEntity<Void> remover(@PathVariable Long eventoId, @PathVariable Long produtoId) {
-        produtoService.removerProduto(produtoId);
+        produtoService.removerProduto(eventoId, produtoId);
         return ResponseEntity.noContent().build();
     }
 }

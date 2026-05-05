@@ -32,10 +32,11 @@ public class Produto {
 
     // Relacionamento (Um Produto tem Vários Subprodutos: Insumos ou Equipe)
     @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<SubProduto> subprodutos = new ArrayList<>();
 
     // Cálculos matemáticos migrados do seu app Desktop Original!
-    public BigDecimal cacularCustoMateriais() {
+    public BigDecimal calcularCustoMateriais() {
         if (subprodutos == null) return BigDecimal.ZERO;
         return subprodutos.stream()
                 .filter(s -> !s.isEhFuncionario())
@@ -52,6 +53,6 @@ public class Produto {
     }
 
     public BigDecimal calcularCustoTotal() {
-        return cacularCustoMateriais().add(calcularCustoFuncionarios());
+        return calcularCustoMateriais().add(calcularCustoFuncionarios());
     }
 }

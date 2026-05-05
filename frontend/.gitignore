@@ -1,0 +1,21 @@
+# Dependências
+node_modules/
+dist/
+
+# Variáveis de ambiente (nunca commitar no git!)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Arquivos do editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

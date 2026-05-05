@@ -3,6 +3,7 @@ package com.saas.eventos.api.controller;
 import com.saas.eventos.api.dto.AuthRequest;
 import com.saas.eventos.api.dto.AuthResponse;
 import com.saas.eventos.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 

@@ -8,10 +8,14 @@ import com.saas.eventos.domain.model.Produto;
 import com.saas.eventos.domain.model.SubProduto;
 import com.saas.eventos.domain.repository.EventoRepository;
 import com.saas.eventos.domain.repository.ProdutoRepository;
+import com.saas.eventos.exception.AcessoNegadoException;
+import com.saas.eventos.exception.EventoNotFoundException;
+import com.saas.eventos.exception.ProdutoNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,32 +31,26 @@ public class ProdutoService {
         return auth.getTenantId();
     }
 
-    /**
-     * Lista os produtos de um evento específico (validando que pertence ao tenant logado)
-     */
-    public List<ProdutoDTO> listarProdutosDoEvento(Long eventoId) {
+    private Evento buscarEventoValidado(Long eventoId) {
         Evento evento = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
+                .orElseThrow(() -> new EventoNotFoundException(eventoId));
         
         if (!evento.getTenant().getId().equals(getCurrentTenantId())) {
-            throw new RuntimeException("Sem permissão para acessar este evento.");
+            throw new AcessoNegadoException("Este evento pertence a outra empresa.");
         }
+        return evento;
+    }
+
+    public List<ProdutoDTO> listarProdutosDoEvento(Long eventoId) {
+        buscarEventoValidado(eventoId);
 
         return produtoRepository.findByEventoId(eventoId)
                 .stream().map(ProdutoDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Salva um produto DENTRO de um evento específico
-     */
     public ProdutoDTO salvarProdutoNoEvento(Long eventoId, ProdutoDTO dto) {
-        Evento evento = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
-
-        if (!evento.getTenant().getId().equals(getCurrentTenantId())) {
-            throw new RuntimeException("Sem permissão para acessar este evento.");
-        }
+        Evento evento = buscarEventoValidado(eventoId);
 
         Produto p = new Produto();
         p.setNome(dto.getNome());
@@ -74,15 +72,45 @@ public class ProdutoService {
         return ProdutoDTO.fromEntity(salvo);
     }
 
-    /**
-     * Remove um produto pelo ID (validando tenant)
-     */
-    public void removerProduto(Long produtoId) {
-        Produto produto = produtoRepository.findById(produtoId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+    public ProdutoDTO editarProduto(Long eventoId, Long produtoId, ProdutoDTO dto) {
+        buscarEventoValidado(eventoId); // Garante que tem acesso ao evento
         
-        if (!produto.getEvento().getTenant().getId().equals(getCurrentTenantId())) {
-            throw new RuntimeException("Sem permissão para remover este produto.");
+        Produto produto = produtoRepository.findById(produtoId)
+                .orElseThrow(() -> new ProdutoNotFoundException(produtoId));
+                
+        if (!produto.getEvento().getId().equals(eventoId)) {
+            throw new AcessoNegadoException("Este produto não pertence ao evento informado.");
+        }
+
+        produto.setNome(dto.getNome());
+
+        // Limpa subprodutos antigos e adiciona os novos para simplificar a edição no frontend
+        produto.getSubprodutos().clear();
+        
+        if (dto.getSubprodutos() != null) {
+            for (SubProdutoDTO sDto : dto.getSubprodutos()) {
+                SubProduto sp = new SubProduto();
+                sp.setNome(sDto.getNome());
+                sp.setPrecoUnitario(sDto.getPrecoUnitario());
+                sp.setQuantidade(sDto.getQuantidade());
+                sp.setEhFuncionario(sDto.isEhFuncionario());
+                sp.setProduto(produto);
+                produto.getSubprodutos().add(sp);
+            }
+        }
+
+        Produto salvo = produtoRepository.save(produto);
+        return ProdutoDTO.fromEntity(salvo);
+    }
+
+    public void removerProduto(Long eventoId, Long produtoId) {
+        buscarEventoValidado(eventoId); // Garante acesso e tenant
+
+        Produto produto = produtoRepository.findById(produtoId)
+                .orElseThrow(() -> new ProdutoNotFoundException(produtoId));
+        
+        if (!produto.getEvento().getId().equals(eventoId)) {
+            throw new AcessoNegadoException("Sem permissão para remover este produto.");
         }
         
         produtoRepository.delete(produto);
